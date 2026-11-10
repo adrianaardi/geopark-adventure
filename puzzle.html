@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jigsaw Puzzle Mechanics Demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Clean Square Puzzle Mechanics</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* Mobile touch optimization */
@@ -11,247 +11,214 @@
             user-select: none;
             -webkit-user-select: none;
             touch-action: manipulation;
+            box-sizing: border-box;
         }
 
-        /* Puzzle board dimensions */
+        /* Responsive container maintaining ~1600:1012 (1.58:1) aspect ratio */
+        .puzzle-board-container {
+            width: min(92vw, 420px);
+            aspect-ratio: 1600 / 1012;
+            position: relative;
+        }
+
+        /* 3x3 Tile Grid */
         .puzzle-grid {
-            width: min(90vw, 360px);
-            height: min(90vw, 360px);
+            width: 100%;
+            height: 100%;
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             grid-template-rows: repeat(3, 1fr);
             gap: 2px;
+            background-color: #d1d5db;
         }
 
-        /* Tile styling */
-        .puzzle-piece {
+        /* Square/Rectangular Tile Styling */
+        .tile {
             width: 100%;
             height: 100%;
             cursor: pointer;
-            position: relative;
+            background-repeat: no-repeat;
+            /* Match grid size (3x3 = 300% width and height) */
             background-size: 300% 300%;
-            background-color: #cbd5e1;
-            transition: transform 0.15s ease, filter 0.15s ease;
+            transition: border 0.1s ease, transform 0.1s ease;
+            border: 1px solid rgba(255, 255, 255, 0.4);
         }
 
-        /* Selected Piece Highlight */
-        .puzzle-piece.selected {
-            transform: scale(1.08);
-            z-index: 30;
-            filter: brightness(1.2) drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+        /* Highlighted state when tapped for swapping */
+        .tile.selected {
+            border: 3px solid #2563eb;
+            transform: scale(0.96);
+            box-shadow: 0 0 10px rgba(37, 99, 235, 0.6);
+            z-index: 10;
         }
 
-        /* SVG Clip Paths for 3x3 Interlocking Shapes (Tabs and Blanks) */
-        /* Top Row */
-        .piece-0 { clip-path: url(#jigsaw-0); -webkit-clip-path: url(#jigsaw-0); }
-        .piece-1 { clip-path: url(#jigsaw-1); -webkit-clip-path: url(#jigsaw-1); }
-        .piece-2 { clip-path: url(#jigsaw-2); -webkit-clip-path: url(#jigsaw-2); }
-        /* Middle Row */
-        .piece-3 { clip-path: url(#jigsaw-3); -webkit-clip-path: url(#jigsaw-3); }
-        .piece-4 { clip-path: url(#jigsaw-4); -webkit-clip-path: url(#jigsaw-4); }
-        .piece-5 { clip-path: url(#jigsaw-5); -webkit-clip-path: url(#jigsaw-5); }
-        /* Bottom Row */
-        .piece-6 { clip-path: url(#jigsaw-6); -webkit-clip-path: url(#jigsaw-6); }
-        .piece-7 { clip-path: url(#jigsaw-7); -webkit-clip-path: url(#jigsaw-7); }
-        .piece-8 { clip-path: url(#jigsaw-8); -webkit-clip-path: url(#jigsaw-8); }
+        /* Green indicator outline when tile is in correct slot */
+        .tile.correct {
+            border-bottom: 2px solid #22c55e;
+        }
     </style>
 </head>
-<body class="bg-gray-100 text-gray-800 min-h-screen flex flex-col items-center justify-between p-4">
+<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col items-center justify-between p-4">
 
-    <!-- Header Stats -->
-    <div class="w-full max-w-sm flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-gray-200">
-        <div>
-            <h1 class="font-bold text-lg">Puzzle Demo</h1>
-            <p class="text-xs text-gray-500">Tap two tiles to swap</p>
+    <!-- Main Game Board Container -->
+    <main class="my-auto flex flex-col items-center gap-3">
+        <div class="puzzle-board-container bg-gray-200 p-1.5 rounded-xl shadow-inner border border-gray-300">
+            <div id="board" class="puzzle-grid rounded-lg overflow-hidden">
+                <!-- 9 Tiles rendered dynamically by JS -->
+            </div>
         </div>
-        <div class="text-right">
-            <span class="text-xs text-gray-400 block uppercase font-semibold">Progress</span>
-            <span id="pct-display" class="text-xl font-black text-blue-600">0%</span>
+
+        <!-- Touch Feedback Status Message -->
+        <div id="status-msg" class="text-center text-sm font-medium text-gray-600 h-5">
+            Tap any tile to start swapping
         </div>
-    </div>
+    </main>
 
-    <!-- Puzzle Canvas / Grid -->
-    <div class="my-auto bg-gray-300 p-2 rounded-xl shadow-inner border border-gray-300">
-        <div id="board" class="puzzle-grid">
-            <!-- 9 Puzzle Pieces Dynamic Output -->
-        </div>
-    </div>
+    <!-- Control Buttons -->
+    <footer class="w-full max-w-sm flex flex-col gap-2">
+        <button id="reset-btn" class="w-full py-3 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold rounded-xl shadow transition">
+            Shuffle Puzzle
+        </button>
+    </footer>
 
-    <!-- Controls & Status -->
-    <div class="w-full max-w-sm flex flex-col gap-3">
-        <div id="status-msg" class="text-center text-sm font-medium text-gray-600 h-6">
-            Tap a piece to select
-        </div>
-        
-        <div class="flex gap-2">
-            <button id="reset-btn" class="flex-1 py-3 bg-blue-600 text-white font-bold rounded-lg shadow active:scale-95 transition">
-                Shuffle / Reset
-            </button>
-        </div>
-    </div>
-
-    <!-- SVG Definitions for Interlocking Jigsaw Clips (Tabs & Blanks) -->
-    <svg width="0" height="0" class="absolute">
-        <defs>
-            <!-- Piece 0: Top-Left (Right Tab, Bottom Blank) -->
-            <clipPath id="jigsaw-0" clipPathUnits="objectBoundingBox">
-                <path d="M 0,0 L 1,0 L 1,0.38 C 1.15,0.38 1.15,0.62 1,0.62 L 1,1 L 0.62,1 C 0.62,0.85 0.38,0.85 0.38,1 L 0,1 Z" />
-            </clipPath>
-
-            <!-- Piece 1: Top-Center (Left Blank, Right Tab, Bottom Tab) -->
-            <clipPath id="jigsaw-1" clipPathUnits="objectBoundingBox">
-                <path d="M 0,0 L 1,0 L 1,0.38 C 1.15,0.38 1.15,0.62 1,0.62 L 1,1 L 0.62,1 C 0.62,1.15 0.38,1.15 0.38,1 L 0,1 L 0,0.62 C 0.15,0.62 0.15,0.38 0,0.38 Z" />
-            </clipPath>
-
-            <!-- Piece 2: Top-Right (Left Blank, Bottom Blank) -->
-            <clipPath id="jigsaw-2" clipPathUnits="objectBoundingBox">
-                <path d="M 0,0 L 1,0 L 1,1 L 0.62,1 C 0.62,0.85 0.38,0.85 0.38,1 L 0,1 L 0,0.62 C 0.15,0.62 0.15,0.38 0,0.38 Z" />
-            </clipPath>
-
-            <!-- Piece 3: Mid-Left (Top Tab, Right Blank, Bottom Tab) -->
-            <clipPath id="jigsaw-3" clipPathUnits="objectBoundingBox">
-                <path d="M 0,0 L 0.38,0 C 0.38,-0.15 0.62,-0.15 0.62,0 L 1,0 L 1,0.38 C 0.85,0.38 0.85,0.62 1,0.62 L 1,1 L 0.62,1 C 0.62,1.15 0.38,1.15 0.38,1 L 0,1 Z" />
-            </clipPath>
-
-            <!-- Piece 4: Center (Top Blank, Left Tab, Right Tab, Bottom Blank) -->
-            <clipPath id="jigsaw-4" clipPathUnits="objectBoundingBox">
-                <path d="M 0,0 L 0.38,0 C 0.38,0.15 0.62,0.15 0.62,0 L 1,0 L 1,0.38 C 1.15,0.38 1.15,0.62 1,0.62 L 1,1 L 0.62,1 C 0.62,0.85 0.38,0.85 0.38,1 L 0,1 L 0,0.62 C -0.15,0.62 -0.15,0.38 0,0.38 Z" />
-            </clipPath>
-
-            <!-- Piece 5: Mid-Right (Top Tab, Left Blank, Bottom Tab) -->
-            <clipPath id="jigsaw-5" clipPathUnits="objectBoundingBox">
-                <path d="M 0,0 L 0.38,0 C 0.38,-0.15 0.62,-0.15 0.62,0 L 1,0 L 1,1 L 0.62,1 C 0.62,1.15 0.38,1.15 0.38,1 L 0,1 L 0,0.62 C 0.15,0.62 0.15,0.38 0,0.38 Z" />
-            </clipPath>
-
-            <!-- Piece 6: Bottom-Left (Top Blank, Right Tab) -->
-            <clipPath id="jigsaw-6" clipPathUnits="objectBoundingBox">
-                <path d="M 0,0 L 0.38,0 C 0.38,0.15 0.62,0.15 0.62,0 L 1,0 L 1,0.38 C 1.15,0.38 1.15,0.62 1,0.62 L 1,1 L 0,1 Z" />
-            </clipPath>
-
-            <!-- Piece 7: Bottom-Center (Top Blank, Left Blank, Right Blank) -->
-            <clipPath id="jigsaw-7" clipPathUnits="objectBoundingBox">
-                <path d="M 0,0 L 0.38,0 C 0.38,0.15 0.62,0.15 0.62,0 L 1,0 L 1,0.38 C 0.85,0.38 0.85,0.62 1,0.62 L 1,1 L 0,1 L 0,0.62 C 0.15,0.62 0.15,0.38 0,0.38 Z" />
-            </clipPath>
-
-            <!-- Piece 8: Bottom-Right (Top Blank, Left Tab) -->
-            <clipPath id="jigsaw-8" clipPathUnits="objectBoundingBox">
-                <path d="M 0,0 L 0.38,0 C 0.38,0.15 0.62,0.15 0.62,0 L 1,0 L 1,1 L 0,1 L 0,0.62 C -0.15,0.62 -0.15,0.38 0,0.38 Z" />
-            </clipPath>
-        </defs>
-    </svg>
-
+    <!-- JavaScript Logic -->
     <script>
-        // Path to image, with standard fallback image for browser preview
-        const IMAGE_SRC = 'images/frog-puzzle.jpeg';
-        const FALLBACK_SRC = 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=600&q=80';
+        // Primary local file path (1600x1012 image)
+        const LOCAL_IMAGE = 'images/frog-puzzle.jpeg';
+        // Online fallback image in case file is not found locally during testing
+        const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=800&q=80';
 
         const GRID_SIZE = 3;
-        const TOTAL_PIECES = 9;
+        const TOTAL_TILES = 9;
 
-        // Board state array (stores piece IDs assigned to grid slots 0..8)
         let boardState = [];
-        let selectedSlot = null;
-        let activeImageSrc = IMAGE_SRC;
+        let selectedIndex = null;
+        let activeImage = LOCAL_IMAGE;
 
         const boardEl = document.getElementById('board');
         const pctEl = document.getElementById('pct-display');
         const statusEl = document.getElementById('status-msg');
         const resetBtn = document.getElementById('reset-btn');
 
-        // Check if user image exists, fallback if offline or local file missing
-        const imgPreload = new Image();
-        imgPreload.src = IMAGE_SRC;
-        imgPreload.onerror = () => {
-            activeImageSrc = FALLBACK_SRC;
+        // Verify local image existence, fallback if missing
+        const imgTest = new Image();
+        imgTest.src = LOCAL_IMAGE;
+        imgTest.onerror = () => {
+            activeImage = FALLBACK_IMAGE;
             renderBoard();
         };
 
+        /**
+         * Initialize or Shuffle the Game Board
+         */
         function initGame() {
-            selectedSlot = null;
-            // Create shuffled indices
-            boardState = Array.from({ length: TOTAL_PIECES }, (_, i) => i);
-            
-            // Shuffle until not fully solved
+            selectedIndex = null;
+
+            // Generate solvable shuffled array
+            boardState = Array.from({ length: TOTAL_TILES }, (_, i) => i);
             do {
                 for (let i = boardState.length - 1; i > 0; i--) {
                     const j = Math.floor(Math.random() * (i + 1));
                     [boardState[i], boardState[j]] = [boardState[j], boardState[i]];
                 }
-            } while (checkCompletion() === 100);
+            } while (calculatePercentage() === 100); // Ensure it doesn't start solved
 
             renderBoard();
             updatePercentage();
-            statusEl.textContent = "Tap a piece to select";
+            statusEl.textContent = "Tap any tile to start swapping";
+            statusEl.className = "text-center text-sm font-medium text-gray-600 h-5";
         }
 
+        /**
+         * Render 3x3 Tile Grid with correct image background crops
+         */
         function renderBoard() {
             boardEl.innerHTML = '';
 
-            boardState.forEach((pieceId, slotIndex) => {
-                const piece = document.createElement('div');
-                
-                // Use piece location for jigsaw shape clip path
-                piece.className = `puzzle-piece piece-${slotIndex}`;
-                piece.style.backgroundImage = `url('${activeImageSrc}')`;
-                
-                // Calculate correct background crop offsets for pieceId
+            boardState.forEach((pieceId, currentSlot) => {
+                const tile = document.createElement('div');
+                tile.className = 'tile';
+                tile.style.backgroundImage = `url('${activeImage}')`;
+
+                // Calculate 3x3 grid background crop positions
                 const row = Math.floor(pieceId / GRID_SIZE);
                 const col = pieceId % GRID_SIZE;
-                piece.style.backgroundPosition = `${col * 50}% ${row * 50}%`;
+                
+                // 0%, 50%, 100% background offsets
+                const bgX = col * 50;
+                const bgY = row * 50;
+                tile.style.backgroundPosition = `${bgX}% ${bgY}%`;
 
-                if (selectedSlot === slotIndex) {
-                    piece.classList.add('selected');
+                // Highlight selected tile
+                if (selectedIndex === currentSlot) {
+                    tile.classList.add('selected');
                 }
 
-                piece.addEventListener('click', () => handleTap(slotIndex));
-                boardEl.appendChild(piece);
+                // Green border indicator if tile is in correct slot
+                if (pieceId === currentSlot) {
+                    tile.classList.add('correct');
+                }
+
+                // Handle mobile touch tap
+                tile.addEventListener('click', () => handleTap(currentSlot));
+
+                boardEl.appendChild(tile);
             });
         }
 
+        /**
+         * Tap-to-Swap logic for mobile touchscreens
+         */
         function handleTap(slotIndex) {
-            if (selectedSlot === null) {
-                // First selection
-                selectedSlot = slotIndex;
-                statusEl.textContent = `Piece ${slotIndex + 1} selected. Tap another slot to swap.`;
-            } else if (selectedSlot === slotIndex) {
-                // Deselect
-                selectedSlot = null;
-                statusEl.textContent = "Deselected. Tap a piece to select";
-            } else {
-                // Swap pieces
-                const prev = selectedSlot;
+            // First tap: Select tile
+            if (selectedIndex === null) {
+                selectedIndex = slotIndex;
+                statusEl.textContent = `Tile selected. Tap another to swap.`;
+            } 
+            // Tap same tile again: Deselect
+            else if (selectedIndex === slotIndex) {
+                selectedIndex = null;
+                statusEl.textContent = "Deselected tile.";
+            } 
+            // Second tap: Swap tiles
+            else {
+                const prev = selectedIndex;
                 [boardState[prev], boardState[slotIndex]] = [boardState[slotIndex], boardState[prev]];
-                selectedSlot = null;
-                statusEl.textContent = "Swapped!";
+                selectedIndex = null;
+                statusEl.textContent = "Tiles swapped!";
             }
 
             renderBoard();
             updatePercentage();
         }
 
-        function checkCompletion() {
+        /**
+         * Calculate accuracy percentage (0% to 100%)
+         */
+        function calculatePercentage() {
             let correctCount = 0;
             boardState.forEach((pieceId, slotIndex) => {
                 if (pieceId === slotIndex) correctCount++;
             });
-            return Math.round((correctCount / TOTAL_PIECES) * 100);
+            return Math.round((correctCount / TOTAL_TILES) * 100);
         }
 
+        /**
+         * Update UI percentage and win status
+         */
         function updatePercentage() {
-            const pct = checkCompletion();
+            const pct = calculatePercentage();
             pctEl.textContent = `${pct}%`;
 
             if (pct === 100) {
-                statusEl.textContent = "🎉 Puzzle Completed!";
-                statusEl.className = "text-center text-sm font-bold text-green-600 h-6";
-            } else {
-                statusEl.className = "text-center text-sm font-medium text-gray-600 h-6";
+                statusEl.textContent = "🎉 Solved! 100% Completed";
+                statusEl.className = "text-center text-sm font-bold text-green-600 h-5";
             }
         }
 
         resetBtn.addEventListener('click', initGame);
 
-        // Start puzzle
+        // Start game on page load
         initGame();
     </script>
 </body>
