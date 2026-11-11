@@ -3,149 +3,170 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Clean Square Puzzle Mechanics</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Picture Puzzle</title>
     <link rel="stylesheet" href="style.css">
-    <style>
-        /* Mobile touch optimization */
-        * {
-            user-select: none;
-            -webkit-user-select: none;
-            touch-action: manipulation;
-            box-sizing: border-box;
-        }
-
-        /* Responsive container maintaining ~1600:1012 (1.58:1) aspect ratio */
-        .puzzle-board-container {
-            width: min(92vw, 420px);
-            aspect-ratio: 1600 / 1012;
-            position: relative;
-        }
-
-        /* 3x3 Tile Grid */
-        .puzzle-grid {
-            width: 100%;
-            height: 100%;
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            grid-template-rows: repeat(3, 1fr);
-            gap: 2px;
-            background-color: #d1d5db;
-        }
-
-        /* Square/Rectangular Tile Styling */
-        .tile {
-            width: 100%;
-            height: 100%;
-            cursor: pointer;
-            background-repeat: no-repeat;
-            /* Match grid size (3x3 = 300% width and height) */
-            background-size: 300% 300%;
-            transition: border 0.1s ease, transform 0.1s ease;
-            border: 1px solid rgba(255, 255, 255, 0.4);
-        }
-
-        /* Highlighted state when tapped for swapping */
-        .tile.selected {
-            border: 3px solid #2563eb;
-            transform: scale(0.96);
-            box-shadow: 0 0 10px rgba(37, 99, 235, 0.6);
-            z-index: 10;
-        }
-
-        /* Green indicator outline when tile is in correct slot */
-        .tile.correct {
-            border-bottom: 2px solid #22c55e;
-        }
-    </style>
 </head>
 <body>
 
-    <header class="w-full max-w-sm flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+    <!-- Header Stats -->
+    <header class="game-header">
         <div>
-            <h1 class="font-bold text-base text-gray-900">Frog Puzzle</h1>
-            <p class="text-xs text-gray-500">Tap two tiles to swap</p>
+            <h1>🧩 Frog Puzzle</h1>
+            <p>Tap two tiles to swap</p>
         </div>
-        <div class="text-right">
-            <span class="text-xs text-gray-400 font-semibold block uppercase">Progress</span>
-            <span id="pct-display" class="text-xl font-black text-blue-600">0%</span>
+        <div class="stat-box">
+            <span>Time</span>
+            <span id="timer-display">60s</span>
+        </div>
+        <div class="stat-box">
+            <span>Accuracy</span>
+            <span id="pct-display">0%</span>
         </div>
     </header>
 
+    <!-- Timer Visual Bar -->
+    <div class="timer-bar-container">
+        <div id="timer-bar" class="timer-bar"></div>
+    </div>
+
     <!-- Main Game Board Container -->
-    <main class="my-auto flex flex-col items-center gap-3">
-        <div class="puzzle-board-container bg-gray-200 p-1.5 rounded-xl shadow-inner border border-gray-300">
-            <div id="board" class="puzzle-grid rounded-lg overflow-hidden">
+    <main class="game-main">
+        <div class="puzzle-board-container">
+            <div id="board" class="puzzle-grid">
                 <!-- 9 Tiles rendered dynamically by JS -->
             </div>
         </div>
 
         <!-- Touch Feedback Status Message -->
-        <div id="status-msg" class="text-center text-sm font-medium text-gray-600 h-5">
+        <div id="status-msg" class="status-msg">
             Tap any tile to start swapping
         </div>
     </main>
 
-    <!-- Control Buttons -->
-    <footer class="w-full max-w-sm flex flex-col gap-2">
-        <button id="reset-btn" class="w-full py-3 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold rounded-xl shadow transition">
-            Shuffle Puzzle
-        </button>
-        		<a class="back-link" href="index.html">Back to home</a>
-
+    <!-- Controls -->
+    <footer class="game-footer">
+        <button id="reset-btn" class="btn-primary">Restart Game</button>
+        <a class="back-link" href="index.html">← Back to home</a>
     </footer>
+
+    <!-- START OVERLAY SCREEN -->
+    <div id="start-overlay" class="overlay">
+        <div class="modal">
+            <h2>Picture Puzzle</h2>
+            <p>Complete the frog picture within 60 seconds! Faster completion earns a speed bonus.</p>
+
+            <div class="puzzle-board-container preview-container">
+                <img id="preview-img" src="images/frog-puzzle.jpeg" alt="Puzzle Target">
+            </div>
+
+            <button id="start-btn" class="btn-success">Start Game</button>
+        </div>
+    </div>
+
+    <!-- GAME OVER / RESULTS OVERLAY -->
+    <div id="result-overlay" class="overlay hidden">
+        <div class="modal">
+            <h2 id="result-title">Time's Up!</h2>
+            <p id="result-sub">Here is your final performance score:</p>
+
+            <div class="score-card">
+                <span class="score-label">Final Score</span>
+                <span id="final-score" class="score-value">0%</span>
+                <span id="score-breakdown">Accuracy: 0% | Speed Bonus: +0%</span>
+            </div>
+
+            <div class="modal-actions">
+                <button id="play-again-btn" class="btn-primary">Try Again</button>
+                <a href="index.html" class="btn-secondary">Done</a>
+            </div>
+        </div>
+    </div>
 
     <!-- JavaScript Logic -->
     <script>
-        // Primary local file path (1600x1012 image)
         const LOCAL_IMAGE = 'images/frog-puzzle.jpeg';
-        // Online fallback image in case file is not found locally during testing
         const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=800&q=80';
 
         const GRID_SIZE = 3;
         const TOTAL_TILES = 9;
+        const MAX_TIME = 60;
 
         let boardState = [];
         let selectedIndex = null;
         let activeImage = LOCAL_IMAGE;
 
+        let timerInterval = null;
+        let secondsLeft = MAX_TIME;
+        let startTime = null;
+        let isGameActive = false;
+
         const boardEl = document.getElementById('board');
         const pctEl = document.getElementById('pct-display');
+        const timerDisplayEl = document.getElementById('timer-display');
+        const timerBarEl = document.getElementById('timer-bar');
         const statusEl = document.getElementById('status-msg');
         const resetBtn = document.getElementById('reset-btn');
+        const startBtn = document.getElementById('start-btn');
+        const startOverlay = document.getElementById('start-overlay');
+        const resultOverlay = document.getElementById('result-overlay');
+        const previewImg = document.getElementById('preview-img');
 
-        // Verify local image existence, fallback if missing
         const imgTest = new Image();
         imgTest.src = LOCAL_IMAGE;
         imgTest.onerror = () => {
             activeImage = FALLBACK_IMAGE;
-            renderBoard();
+            previewImg.src = FALLBACK_IMAGE;
         };
 
-        /**
-         * Initialize or Shuffle the Game Board
-         */
-        function initGame() {
+        function setupBoard() {
             selectedIndex = null;
-
-            // Generate solvable shuffled array
             boardState = Array.from({ length: TOTAL_TILES }, (_, i) => i);
             do {
                 for (let i = boardState.length - 1; i > 0; i--) {
                     const j = Math.floor(Math.random() * (i + 1));
                     [boardState[i], boardState[j]] = [boardState[j], boardState[i]];
                 }
-            } while (calculatePercentage() === 100); // Ensure it doesn't start solved
+            } while (calculateAccuracy() === 100);
 
             renderBoard();
-            updatePercentage();
-            statusEl.textContent = "Tap any tile to start swapping";
-            statusEl.className = "text-center text-sm font-medium text-gray-600 h-5";
+            updateAccuracyDisplay();
         }
 
-        /**
-         * Render 3x3 Tile Grid with correct image background crops
-         */
+        function startGame() {
+            setupBoard();
+            startOverlay.classList.add('hidden');
+            resultOverlay.classList.add('hidden');
+
+            isGameActive = true;
+            secondsLeft = MAX_TIME;
+            startTime = Date.now();
+
+            timerDisplayEl.textContent = `${secondsLeft}s`;
+            timerBarEl.style.width = '100%';
+            timerBarEl.classList.remove('warning', 'danger');
+            statusEl.textContent = "Tap any tile to start swapping";
+
+            if (timerInterval) clearInterval(timerInterval);
+
+            timerInterval = setInterval(() => {
+                secondsLeft--;
+                timerDisplayEl.textContent = `${secondsLeft}s`;
+
+                const pct = (secondsLeft / MAX_TIME) * 100;
+                timerBarEl.style.width = `${pct}%`;
+
+                if (secondsLeft <= 30) timerBarEl.classList.add('warning');
+                if (secondsLeft <= 15) {
+                    timerBarEl.classList.remove('warning');
+                    timerBarEl.classList.add('danger');
+                }
+
+                if (secondsLeft <= 0) {
+                    endGame(false);
+                }
+            }, 1000);
+        }
+
         function renderBoard() {
             boardEl.innerHTML = '';
 
@@ -154,48 +175,34 @@
                 tile.className = 'tile';
                 tile.style.backgroundImage = `url('${activeImage}')`;
 
-                // Calculate 3x3 grid background crop positions
                 const row = Math.floor(pieceId / GRID_SIZE);
                 const col = pieceId % GRID_SIZE;
-                
-                // 0%, 50%, 100% background offsets
-                const bgX = col * 50;
-                const bgY = row * 50;
-                tile.style.backgroundPosition = `${bgX}% ${bgY}%`;
 
-                // Highlight selected tile
+                tile.style.backgroundPosition = `${col * 50}% ${row * 50}%`;
+
                 if (selectedIndex === currentSlot) {
                     tile.classList.add('selected');
                 }
 
-                // Green border indicator if tile is in correct slot
                 if (pieceId === currentSlot) {
                     tile.classList.add('correct');
                 }
 
-                // Handle mobile touch tap
                 tile.addEventListener('click', () => handleTap(currentSlot));
-
                 boardEl.appendChild(tile);
             });
         }
 
-        /**
-         * Tap-to-Swap logic for mobile touchscreens
-         */
         function handleTap(slotIndex) {
-            // First tap: Select tile
+            if (!isGameActive) return;
+
             if (selectedIndex === null) {
                 selectedIndex = slotIndex;
                 statusEl.textContent = `Tile selected. Tap another to swap.`;
-            } 
-            // Tap same tile again: Deselect
-            else if (selectedIndex === slotIndex) {
+            } else if (selectedIndex === slotIndex) {
                 selectedIndex = null;
                 statusEl.textContent = "Deselected tile.";
-            } 
-            // Second tap: Swap tiles
-            else {
+            } else {
                 const prev = selectedIndex;
                 [boardState[prev], boardState[slotIndex]] = [boardState[slotIndex], boardState[prev]];
                 selectedIndex = null;
@@ -203,13 +210,15 @@
             }
 
             renderBoard();
-            updatePercentage();
+            const accuracy = calculateAccuracy();
+            updateAccuracyDisplay();
+
+            if (accuracy === 100) {
+                endGame(true);
+            }
         }
 
-        /**
-         * Calculate accuracy percentage (0% to 100%)
-         */
-        function calculatePercentage() {
+        function calculateAccuracy() {
             let correctCount = 0;
             boardState.forEach((pieceId, slotIndex) => {
                 if (pieceId === slotIndex) correctCount++;
@@ -217,23 +226,41 @@
             return Math.round((correctCount / TOTAL_TILES) * 100);
         }
 
-        /**
-         * Update UI percentage and win status
-         */
-        function updatePercentage() {
-            const pct = calculatePercentage();
+        function updateAccuracyDisplay() {
+            const pct = calculateAccuracy();
             pctEl.textContent = `${pct}%`;
-
-            if (pct === 100) {
-                statusEl.textContent = "🎉 Solved! 100% Completed";
-                statusEl.className = "text-center text-sm font-bold text-green-600 h-5";
-            }
         }
 
-        resetBtn.addEventListener('click', initGame);
+        function endGame(completedBeforeTimeout) {
+            isGameActive = false;
+            clearInterval(timerInterval);
 
-        // Start game on page load
-        initGame();
+            const accuracy = calculateAccuracy();
+            let finalScore = 0;
+            let speedBonus = 0;
+
+            if (completedBeforeTimeout && accuracy === 100) {
+                const timeSpent = Math.floor((Date.now() - startTime) / 1000);
+                const remainingSeconds = Math.max(0, MAX_TIME - timeSpent);
+                speedBonus = Math.round((remainingSeconds / MAX_TIME) * 30);
+                finalScore = Math.min(100, 70 + speedBonus);
+
+                document.getElementById('result-title').textContent = "🎉 Solved!";
+                document.getElementById('result-sub').textContent = `Awesome job! You finished in ${timeSpent} seconds.`;
+            } else {
+                finalScore = accuracy;
+                document.getElementById('result-title').textContent = "⏰ Time's Up!";
+                document.getElementById('result-sub').textContent = "You ran out of time! Here is your accuracy score:";
+            }
+
+            document.getElementById('final-score').textContent = `${finalScore}%`;
+            document.getElementById('score-breakdown').textContent = `Accuracy: ${accuracy}% | Speed Bonus: +${speedBonus}%`;
+            resultOverlay.classList.remove('hidden');
+        }
+
+        startBtn.addEventListener('click', startGame);
+        resetBtn.addEventListener('click', startGame);
+        document.getElementById('play-again-btn').addEventListener('click', startGame);
     </script>
 </body>
 </html>

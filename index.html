@@ -4,16 +4,49 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Geopark Adventure</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <main class="home-page">
-        <h1>Explore • Learn • Play</h1>
-        <h3>Choose Your Adventure</h3>
-            <a class="home-link" href="geoparkquiz.html">Geopark Quiz</a>
-            <a class="home-link" href="jrgeologist.html">Junior Geologist</a>
-            <a class="home-link" href="puzzle.html">Picture Puzzle</a>
+        <div class="home-logos">
+            <img class="home-logo" src="images/swk-delta-logo.png" alt="Sarawak Delta Geopark logo" onerror="this.style.display='none'">
+            <img class="home-logo" src="images/unesco-logo.png" alt="UNESCO logo" onerror="this.style.display='none'">
+        </div>
+
+        <h1 class="home-title">SARAWAK DELTA<br>UNESCO GLOBAL GEOPARK</h1>
+        <h2 class="home-tagline">Borneo's Cradle of Origin</h2>
+        <p class="home-badge">Explore • Learn • Play</p>
+
+        <h3 class="home-subtitle">Choose Your Adventure</h3>
+
+        <nav class="card-list">
+            <a class="home-link quiz" href="geoparkquiz.html">
+                <span class="card-icon" aria-hidden="true">🧠</span>
+                <span class="card-text">
+                    <span class="card-label">Geopark Quiz</span>
+                    <span class="card-title">Test your knowledge</span>
+                </span>
+                <span class="card-play" aria-hidden="true">▶</span>
+            </a>
+
+            <a class="home-link geologist" href="jrgeologist.html">
+                <span class="card-icon" aria-hidden="true">🪨</span>
+                <span class="card-text">
+                    <span class="card-label">Junior Geologist</span>
+                    <span class="card-title">Discover earth's secrets</span>
+                </span>
+                <span class="card-play" aria-hidden="true">▶</span>
+            </a>
+
+            <a class="home-link puzzle" href="puzzle.html">
+                <span class="card-icon" aria-hidden="true">🧩</span>
+                <span class="card-text">
+                    <span class="card-label">Picture Puzzle</span>
+                    <span class="card-title">Piece together Sarawak's heritage</span>
+                </span>
+                <span class="card-play" aria-hidden="true">▶</span>
+            </a>
         </nav>
     </main>
 </body>
+</html>
