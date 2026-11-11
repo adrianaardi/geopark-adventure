@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Picture Puzzle</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Header Stats -->
+    <header class="game-header">
+        <div>
+            <h1>🧩 Teka-Teki Gambar</h1>
+            <p>Tukar dua petak untuk menukar posisi</p>
+        </div>
+        <div class="stat-box">
+            <span>Masa</span>
+            <span id="timer-display">60s</span>
+        </div>
+        <div class="stat-box">
+            <span>Keakuratan</span>
+            <span id="pct-display">0%</span>
+        </div>
+    </header>
+
+    <!-- Timer Visual Bar -->
+    <div class="timer-bar-container">
+        <div id="timer-bar" class="timer-bar"></div>
+    </div>
+
+    <!-- Main Game Board Container -->
+    <main class="game-main">
+        <div class="puzzle-board-container">
+            <div id="board" class="puzzle-grid">
+                <!-- 9 Tiles rendered dynamically by JS -->
+            </div>
+        </div>
+
+        <!-- Touch Feedback Status Message -->
+        <div id="status-msg" class="status-msg">
+            Tekan mana-mana petak untuk memulakan penukaran
+        </div>
+    </main>
+
+    <!-- Controls -->
+    <footer class="game-footer">
+        <button id="reset-btn" class="btn-primary">Mulakan Semula</button>
+        <a class="back-link" href="index-bm.html">← Kembali</a>
+    </footer>
+
+    <!-- START OVERLAY SCREEN -->
+    <div id="start-overlay" class="overlay">
+        <div class="modal">
+            <h2>Teka-Teki Gambar</h2>
+            <p>Selesaikan gambar teka-teki dalam 60 saat! Penyelesaian yang lebih cepat mendapat bonus kelajuan.</p>
+
+            <div class="puzzle-board-container preview-container">
+                <img id="preview-img" src="images/frog-puzzle.jpeg" alt="Puzzle Target">
+            </div>
+
+            <button id="start-btn" class="btn-success">Mulakan</button>
+        </div>
+    </div>
+
+    <!-- GAME OVER / RESULTS OVERLAY -->
+    <div id="result-overlay" class="overlay hidden">
+        <div class="modal">
+            <h2 id="result-title">Masa Tamat!</h2>
+            <p id="result-sub">Ini adalah skor prestasi akhir anda:</p>
+
+            <div class="score-card">
+                <span class="score-label">Skor Akhir</span>
+                <span id="final-score" class="score-value">0%</span>
+                <span id="score-breakdown">Akurasi: 0% | Bonus Kelajuan: +0%</span>
+            </div>
+
+            <div class="modal-actions">
+                <button id="play-again-btn" class="btn-primary">Cuba Lagi</button>
+                <a href="index-bm.html" class="btn-secondary">Selesai</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Logic -->
+    <script>
+        const LOCAL_IMAGE = 'images/frog-puzzle.jpeg';
+        const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=800&q=80';
+
+        const GRID_SIZE = 3;
+        const TOTAL_TILES = 9;
+        const MAX_TIME = 60;
+
+        let boardState = [];
+        let selectedIndex = null;
+        let activeImage = LOCAL_IMAGE;
+
+        let timerInterval = null;
+        let secondsLeft = MAX_TIME;
+        let startTime = null;
+        let isGameActive = false;
+
+        const boardEl = document.getElementById('board');
+        const pctEl = document.getElementById('pct-display');
+        const timerDisplayEl = document.getElementById('timer-display');
+        const timerBarEl = document.getElementById('timer-bar');
+        const statusEl = document.getElementById('status-msg');
+        const resetBtn = document.getElementById('reset-btn');
+        const startBtn = document.getElementById('start-btn');
+        const startOverlay = document.getElementById('start-overlay');
+        const resultOverlay = document.getElementById('result-overlay');
+        const previewImg = document.getElementById('preview-img');
+
+        const imgTest = new Image();
+        imgTest.src = LOCAL_IMAGE;
+        imgTest.onerror = () => {
+            activeImage = FALLBACK_IMAGE;
+            previewImg.src = FALLBACK_IMAGE;
+        };
+
+        function setupBoard() {
+            selectedIndex = null;
+            boardState = Array.from({ length: TOTAL_TILES }, (_, i) => i);
+            do {
+                for (let i = boardState.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [boardState[i], boardState[j]] = [boardState[j], boardState[i]];
+                }
+            } while (calculateAccuracy() === 100);
+
+            renderBoard();
+            updateAccuracyDisplay();
+        }
+
+        function startGame() {
+            setupBoard();
+            startOverlay.classList.add('hidden');
+            resultOverlay.classList.add('hidden');
+
+            isGameActive = true;
+            secondsLeft = MAX_TIME;
+            startTime = Date.now();
+
+            timerDisplayEl.textContent = `${secondsLeft}s`;
+            timerBarEl.style.width = '100%';
+            timerBarEl.classList.remove('warning', 'danger');
+            statusEl.textContent = "Ketuk sebarang petak untuk memulakan penukaran";
+
+            if (timerInterval) clearInterval(timerInterval);
+
+            timerInterval = setInterval(() => {
+                secondsLeft--;
+                timerDisplayEl.textContent = `${secondsLeft}s`;
+
+                const pct = (secondsLeft / MAX_TIME) * 100;
+                timerBarEl.style.width = `${pct}%`;
+
+                if (secondsLeft <= 30) timerBarEl.classList.add('warning');
+                if (secondsLeft <= 15) {
+                    timerBarEl.classList.remove('warning');
+                    timerBarEl.classList.add('danger');
+                }
+
+                if (secondsLeft <= 0) {
+                    endGame(false);
+                }
+            }, 1000);
+        }
+
+        function renderBoard() {
+            boardEl.innerHTML = '';
+
+            boardState.forEach((pieceId, currentSlot) => {
+                const tile = document.createElement('div');
+                tile.className = 'tile';
+                tile.style.backgroundImage = `url('${activeImage}')`;
+
+                const row = Math.floor(pieceId / GRID_SIZE);
+                const col = pieceId % GRID_SIZE;
+
+                tile.style.backgroundPosition = `${col * 50}% ${row * 50}%`;
+
+                if (selectedIndex === currentSlot) {
+                    tile.classList.add('selected');
+                }
+
+                if (pieceId === currentSlot) {
+                    tile.classList.add('correct');
+                }
+
+                tile.addEventListener('click', () => handleTap(currentSlot));
+                boardEl.appendChild(tile);
+            });
+        }
+
+        function handleTap(slotIndex) {
+            if (!isGameActive) return;
+
+            if (selectedIndex === null) {
+                selectedIndex = slotIndex;
+                statusEl.textContent = `Ketuk petak lain untuk menukar posisi.`;
+            } else if (selectedIndex === slotIndex) {
+                selectedIndex = null;
+                statusEl.textContent = "Petak tidak dipilih.";
+            } else {
+                const prev = selectedIndex;
+                [boardState[prev], boardState[slotIndex]] = [boardState[slotIndex], boardState[prev]];
+                selectedIndex = null;
+                statusEl.textContent = "Petak ditukar!";
+            }
+
+            renderBoard();
+            const accuracy = calculateAccuracy();
+            updateAccuracyDisplay();
+
+            if (accuracy === 100) {
+                endGame(true);
+            }
+        }
+
+        function calculateAccuracy() {
+            let correctCount = 0;
+            boardState.forEach((pieceId, slotIndex) => {
+                if (pieceId === slotIndex) correctCount++;
+            });
+            return Math.round((correctCount / TOTAL_TILES) * 100);
+        }
+
+        function updateAccuracyDisplay() {
+            const pct = calculateAccuracy();
+            pctEl.textContent = `${pct}%`;
+        }
+
+        function endGame(completedBeforeTimeout) {
+            isGameActive = false;
+            clearInterval(timerInterval);
+
+            const accuracy = calculateAccuracy();
+            let finalScore = 0;
+            let speedBonus = 0;
+
+            if (completedBeforeTimeout && accuracy === 100) {
+                const timeSpent = Math.floor((Date.now() - startTime) / 1000);
+                const remainingSeconds = Math.max(0, MAX_TIME - timeSpent);
+                speedBonus = Math.round((remainingSeconds / MAX_TIME) * 30);
+                finalScore = Math.min(100, 70 + speedBonus);
+
+                document.getElementById('result-title').textContent = "🎉 Diselesaikan!";
+                document.getElementById('result-sub').textContent = `Kerja bagus! Anda selesai dalam ${timeSpent} saat.`;
+            } else {
+                finalScore = accuracy;
+                document.getElementById('result-title').textContent = "⏰ Masa Tamat!";
+                document.getElementById('result-sub').textContent = "Anda kehabisan masa! Ini adalah skor akurasi anda:";
+            }
+
+            document.getElementById('final-score').textContent = `${finalScore}%`;
+            document.getElementById('score-breakdown').textContent = `Akurasi: ${accuracy}% | Bonus Kelajuan: +${speedBonus}%`;
+            resultOverlay.classList.remove('hidden');
+        }
+
+        startBtn.addEventListener('click', startGame);
+        resetBtn.addEventListener('click', startGame);
+        document.getElementById('play-again-btn').addEventListener('click', startGame);
+    </script>
+</body>
+</html>

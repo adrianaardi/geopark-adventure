@@ -502,3 +502,51 @@ button:active,
     display: flex;
     gap: 0.75rem;
 }
+
+/* ==========================================================
+   LANGUAGE SWITCHER (EN | BM)
+   ========================================================== */
+.lang-switch {
+    margin-top: 0.5rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.lang-globe {
+    font-size: 1.3rem;
+}
+
+.lang-toggle {
+    display: inline-flex;
+    padding: 4px;
+    gap: 4px;
+    background: rgba(27, 42, 73, 0.4);
+    border: 2px solid rgba(255, 255, 255, 0.7);
+    border-radius: 999px;
+    box-shadow: 0 4px 0 rgba(27, 42, 73, 0.35);
+}
+
+.lang-btn {
+    min-width: 64px;
+    padding: 0.4rem 1rem;
+    text-align: center;
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-decoration: none;
+    color: #fff;
+    border-radius: 999px;
+    transition: transform 0.08s ease;
+}
+
+.lang-btn:active {
+    transform: scale(0.94);
+}
+
+.lang-btn.active {
+    color: var(--ink);
+    background: var(--sun);
+    box-shadow: 0 3px 0 var(--sun-dark);
+    pointer-events: none;
+}
