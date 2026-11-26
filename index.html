@@ -6,17 +6,20 @@
   <meta name="theme-color" content="#ff5a36" />
   <title>NomNow – Fake Food Delivery</title>
   <link rel="stylesheet" href="style.css" />
+  <link rel="apple-touch-icon" sizes="180x180" href="images/download (1).png" />
 </head>
 <body>
   <div class="app">
 
     <!-- PAGE 1: WELCOME -->
     <section id="page-welcome" class="page active welcome">
-      <div class="welcome-art">🍔🍕🍜</div>
+      <div class="welcome-art">
+        <img src="images/download (2).png" alt="Welcome Art" />
+      </div>
       <h1>Nom<span>Now</span></h1>
-      <p class="tagline">Hungry? Of course you are.<br />Let's get you fed.</p>
+      <p class="tagline">You're hungry again, aren't you?<br />Even after you just ate.</p>
       <button class="btn btn-light" onclick="goTo('restaurants')">Order Now</button>
-      <small class="disclaimer">Just for fun – no real food will arrive 😄</small>
+      <small class="disclaimer">Let's hope this works lawl</small>
     </section>
 
     <!-- PAGE 2: RESTAURANTS -->
@@ -80,7 +83,7 @@
       <div id="done-state" class="hidden">
         <div class="big-emoji">🎉</div>
         <h2>Order placed!</h2>
-        <p>Your food is on its way…<br />(not really, but we're proud of you)</p>
+        <p>Your food is on its way…<br />(not really, but I'm proud of you)</p>
         <p class="order-id" id="order-id"></p>
         <button class="btn btn-primary" onclick="newOrder()">Order Again</button>
       </div>
@@ -91,45 +94,9 @@
   <script>
     /* ---------- DATA ---------- */
     const restaurants = [
-      { id: 1, name: "Burger Barn", emoji: "🍔", cuisine: "Burgers • Fries", time: "20-30 min", rating: 4.7,
+      { id: 1, name: "KFC", img: "images/kfc.png", cuisine: "Fried Chicken • Fries", time: "20-30 min", rating: 4.7,
         menu: [
-          { id: "b1", name: "Classic Cheeseburger", emoji: "🍔", price: 12.9, desc: "Beef patty, cheddar, pickles" },
-          { id: "b2", name: "Double Bacon Stack", emoji: "🥓", price: 18.5, desc: "Two patties, crispy bacon" },
-          { id: "b3", name: "Loaded Fries", emoji: "🍟", price: 9.9, desc: "Cheese sauce, jalapeños" },
-          { id: "b4", name: "Chocolate Shake", emoji: "🥤", price: 8.5, desc: "Thick and creamy" },
-        ] },
-      { id: 2, name: "Slice of Heaven", emoji: "🍕", cuisine: "Pizza • Italian", time: "25-35 min", rating: 4.5,
-        menu: [
-          { id: "p1", name: "Margherita", emoji: "🍕", price: 21.0, desc: "Tomato, mozzarella, basil" },
-          { id: "p2", name: "Pepperoni Feast", emoji: "🍕", price: 26.0, desc: "Double pepperoni" },
-          { id: "p3", name: "Garlic Bread", emoji: "🥖", price: 7.5, desc: "Buttery and toasty" },
-          { id: "p4", name: "Tiramisu", emoji: "🍰", price: 12.0, desc: "Coffee-soaked dessert" },
-        ] },
-      { id: 3, name: "Noodle Nest", emoji: "🍜", cuisine: "Noodles • Asian", time: "15-25 min", rating: 4.8,
-        menu: [
-          { id: "n1", name: "Spicy Ramen", emoji: "🍜", price: 16.9, desc: "Rich broth, soft egg" },
-          { id: "n2", name: "Pad Thai", emoji: "🍝", price: 15.5, desc: "Peanuts, lime, prawns" },
-          { id: "n3", name: "Gyoza (6 pcs)", emoji: "🥟", price: 9.0, desc: "Pan-fried dumplings" },
-          { id: "n4", name: "Iced Milk Tea", emoji: "🧋", price: 6.5, desc: "With boba pearls" },
-        ] },
-      { id: 4, name: "Taco Fiesta", emoji: "🌮", cuisine: "Mexican • Wraps", time: "20-30 min", rating: 4.4,
-        menu: [
-          { id: "t1", name: "Beef Tacos (3)", emoji: "🌮", price: 14.5, desc: "Salsa, onion, coriander" },
-          { id: "t2", name: "Chicken Burrito", emoji: "🌯", price: 15.9, desc: "Rice, beans, cheese" },
-          { id: "t3", name: "Nachos Supreme", emoji: "🧀", price: 13.0, desc: "Guac and sour cream" },
-        ] },
-      { id: 5, name: "Sweet Tooth Café", emoji: "🍩", cuisine: "Dessert • Coffee", time: "10-20 min", rating: 4.9,
-        menu: [
-          { id: "s1", name: "Glazed Donut", emoji: "🍩", price: 4.5, desc: "Fresh every morning" },
-          { id: "s2", name: "Strawberry Waffle", emoji: "🧇", price: 13.5, desc: "Whipped cream on top" },
-          { id: "s3", name: "Iced Latte", emoji: "☕", price: 9.5, desc: "Smooth and cold" },
-          { id: "s4", name: "Ice Cream Sundae", emoji: "🍨", price: 11.0, desc: "Three scoops, sprinkles" },
-        ] },
-      { id: 6, name: "Sushi Zen", emoji: "🍣", cuisine: "Japanese • Sushi", time: "30-40 min", rating: 4.6,
-        menu: [
-          { id: "z1", name: "Salmon Nigiri (4)", emoji: "🍣", price: 18.0, desc: "Fresh salmon on rice" },
-          { id: "z2", name: "Dragon Roll", emoji: "🍱", price: 22.0, desc: "Eel, avocado, tobiko" },
-          { id: "z3", name: "Miso Soup", emoji: "🥣", price: 5.5, desc: "Tofu and seaweed" },
+          { id: "k1", name: "Zinger Cheezilla Burger", img: "images/zinger-cheezilla-combo_3.webp", price: 20.99, desc: "Crispy, golden fried chicken" },
         ] },
     ];
 
@@ -163,7 +130,7 @@
       $("restaurant-list").innerHTML = list.length
         ? list.map((r) => `
           <div class="card restaurant" onclick="openRestaurant(${r.id})">
-            <div class="thumb">${r.emoji}</div>
+            <div class="thumb"><img src="${r.img}" alt="${r.name}" /></div>
             <div class="info">
               <h3>${r.name}</h3>
               <p>${r.cuisine}</p>
@@ -184,7 +151,7 @@
       }
       currentRestaurant = r;
       $("menu-title").textContent = r.name;
-      $("menu-hero").innerHTML = `<div class="hero-emoji">${r.emoji}</div>
+      $("menu-hero").innerHTML = `<img class="hero-img" src="${r.img}" alt="${r.name}" />
         <div><h3>${r.name}</h3><p>${r.cuisine}</p><p class="meta">⭐ ${r.rating} • 🕒 ${r.time}</p></div>`;
       renderMenu();
       updateCartUI();
@@ -196,7 +163,7 @@
         const qty = cart[m.id] ? cart[m.id].qty : 0;
         return `
         <div class="card food">
-          <div class="thumb small">${m.emoji}</div>
+          <div class="thumb small"><img src="${m.img}" alt="${m.name}" /></div>
           <div class="info">
             <h3>${m.name}</h3>
             <p>${m.desc}</p>
@@ -247,7 +214,7 @@
         `<p class="from">From <b>${currentRestaurant.name}</b></p>` +
         entries.map(({ item, qty }) => `
         <div class="card food">
-          <div class="thumb small">${item.emoji}</div>
+          <div class="thumb small"><img src="${item.img}" alt="${item.name}" /></div>
           <div class="info">
             <h3>${item.name}</h3>
             <p class="price">${money(item.price * qty)}</p>
@@ -260,6 +227,7 @@
         </div>`).join("");
       const sub = cartSubtotal();
       $("cart-summary").innerHTML = `
+        <div class="row"><span>Delivery</span><span>Lot 544, Jalan Piala, Tam..</span></div>
         <div class="row"><span>Subtotal</span><span>${money(sub)}</span></div>
         <div class="row"><span>Delivery fee</span><span>${money(DELIVERY_FEE)}</span></div>
         <div class="row total"><span>Total</span><span>${money(sub + DELIVERY_FEE)}</span></div>`;

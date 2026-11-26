@@ -1,0 +1,39 @@
+      { id: 2, name: "Slice of Heaven", img: "images/restaurants/slice-of-heaven.jpg", cuisine: "Pizza • Italian", time: "25-35 min", rating: 4.5,
+        menu: [
+          { id: "p1", name: "Margherita", img: "images/food/margherita.jpg", price: 21.0, desc: "Tomato, mozzarella, basil" },
+          { id: "p2", name: "Pepperoni Feast", img: "images/food/pepperoni-feast.jpg", price: 26.0, desc: "Double pepperoni" },
+          { id: "p3", name: "Garlic Bread", img: "images/food/garlic-bread.jpg", price: 7.5, desc: "Buttery and toasty" },
+          { id: "p4", name: "Tiramisu", img: "images/food/tiramisu.jpg", price: 12.0, desc: "Coffee-soaked dessert" },
+        ] },
+      { id: 3, name: "Noodle Nest", img: "images/restaurants/noodle-nest.jpg", cuisine: "Noodles • Asian", time: "15-25 min", rating: 4.8,
+        menu: [
+          { id: "n1", name: "Spicy Ramen", img: "images/food/spicy-ramen.jpg", price: 16.9, desc: "Rich broth, soft egg" },
+          { id: "n2", name: "Pad Thai", img: "images/food/pad-thai.jpg", price: 15.5, desc: "Peanuts, lime, prawns" },
+          { id: "n3", name: "Gyoza (6 pcs)", img: "images/food/gyoza-6-pcs.jpg", price: 9.0, desc: "Pan-fried dumplings" },
+          { id: "n4", name: "Iced Milk Tea", img: "images/food/iced-milk-tea.jpg", price: 6.5, desc: "With boba pearls" },
+        ] },
+      { id: 4, name: "Taco Fiesta", img: "images/restaurants/taco-fiesta.jpg", cuisine: "Mexican • Wraps", time: "20-30 min", rating: 4.4,
+        menu: [
+          { id: "t1", name: "Beef Tacos (3)", img: "images/food/beef-tacos-3.jpg", price: 14.5, desc: "Salsa, onion, coriander" },
+          { id: "t2", name: "Chicken Burrito", img: "images/food/chicken-burrito.jpg", price: 15.9, desc: "Rice, beans, cheese" },
+          { id: "t3", name: "Nachos Supreme", img: "images/food/nachos-supreme.jpg", price: 13.0, desc: "Guac and sour cream" },
+        ] },
+      { id: 5, name: "Sweet Tooth Café", img: "images/restaurants/sweet-tooth-cafe.jpg", cuisine: "Dessert • Coffee", time: "10-20 min", rating: 4.9,
+        menu: [
+          { id: "s1", name: "Glazed Donut", img: "images/food/glazed-donut.jpg", price: 4.5, desc: "Fresh every morning" },
+          { id: "s2", name: "Strawberry Waffle", img: "images/food/strawberry-waffle.jpg", price: 13.5, desc: "Whipped cream on top" },
+          { id: "s3", name: "Iced Latte", img: "images/food/iced-latte.jpg", price: 9.5, desc: "Smooth and cold" },
+          { id: "s4", name: "Ice Cream Sundae", img: "images/food/ice-cream-sundae.jpg", price: 11.0, desc: "Three scoops, sprinkles" },
+        ] },
+      { id: 6, name: "Sushi Zen", img: "images/restaurants/sushi-zen.jpg", cuisine: "Japanese • Sushi", time: "30-40 min", rating: 4.6,
+        menu: [
+          { id: "z1", name: "Salmon Nigiri (4)", img: "images/food/salmon-nigiri-4.jpg", price: 18.0, desc: "Fresh salmon on rice" },
+          { id: "z2", name: "Dragon Roll", img: "images/food/dragon-roll.jpg", price: 22.0, desc: "Eel, avocado, tobiko" },
+          { id: "z3", name: "Miso Soup", img: "images/food/miso-soup.jpg", price: 5.5, desc: "Tofu and seaweed" },
+        ] },
+
+
+        .welcome.active { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.welcome-art {
+  animation: bob 2.4s ease-in-out infinite;
+}
